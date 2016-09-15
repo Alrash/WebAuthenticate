@@ -14,7 +14,10 @@
 添加倒计时功能
 
 ##如何使用
-系统中需装有python3任意版本<br>
+系统中需装有python3任意版本（下列下载链接，均来源于python.org）<br>
+[python3.5.1 32位](https://www.python.org/ftp/python/3.5.1/python-3.5.1.exe) <br>
+[python3.5.1 64位](https://www.python.org/ftp/python/3.5.1/python-3.5.1-amd64.exe)<br>
+
 修改net.ini文件
 ```
 net.ini文件中由如下形式组成（等于号右边表达可以填写的东西）
