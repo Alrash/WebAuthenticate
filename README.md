@@ -7,7 +7,7 @@
 > 3. 退出登录
 
 ##更新情况
-2016-09-15 添加windows版
+2016-09-15 添加windows版<br>
 2016-09-17 添加linux版
 
 ##预计更新
@@ -40,6 +40,14 @@ windows:
     双击xx.py即可，会显示提示信息
 ```
 
+```
+linux:
+    仅提供命令行
+    相对于windows使用ini配置文件格式，这里使用json格式作为配置文件，每项意义均和windows版相同
+    webAuthenticate.json文件按照webAuthenticate内所写(path变量)，应放置于/etc/webAuthenticate文件夹下，webAuthenticate程序随意放置
+    webAuthenticate程序内检测连接wifi的部分，使用NetworkManager内置nmcli模块
+    具体使用详见参数说明(webAuthenticate -h/--help)
+```
 ##许可证
 MIT
 
