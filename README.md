@@ -8,10 +8,12 @@
 
 ##更新情况
 2016-09-15 添加windows版
+2016-09-17 添加linux版
 
 ##预计更新
-添加linux版<br>
-添加倒计时功能
+<strike>添加linux版</strike><br>
+<strike>添加倒计时功能(linux)</strike><br>
+添加windows版界面
 
 ##如何使用
 系统中需装有python3任意版本（下列下载链接，均来源于python.org）<br>

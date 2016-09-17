@@ -1,0 +1,16 @@
+[
+{
+"alias": "example",
+"username": "dddddddddddd",
+"provider": "CMCC",
+"encrypt": false,
+"password": "******"
+},
+{
+"alias": "alrash",
+"username": "ddddddddddd",
+"provider": "CMCC",
+"encrypt": false,
+"password": "******"
+}
+]
