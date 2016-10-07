@@ -228,8 +228,18 @@ if args.status:
 
 if args.login:
     if not wifi:
+        print('check wifi ...')
+        #why use check_output?
+        #i'm lazy.
+        try:
+            check_output("nmcli dev wifi | grep i-NUIST", shell = True)
+        except:
+            sys.stderr.write("not found i-NUIST wifi!\n")
+            sys.exit(-1)
         print('be ready to connect i-NUIST wifi')
-        os.system("nmcli dev wifi connect i-NUIST")
+        #os.system("nmcli dev wifi connect i-NUIST")
+        #change to use uuid to connect wifi
+        os.system("nmcli con up uuid d296ecbf-5ec5-49b3-bda7-ddb1489c2ebc")
 
     if args.section:
         login(args.section)
