@@ -1,6 +1,6 @@
-#脚本版认证
+# 脚本版认证
 
-##用途
+## 用途
 用于南京信息工程大学校园网web认证：
 > 1. 入网 
 > 2. 查看本次登录时间
@@ -8,20 +8,20 @@
 > 4. 倒计时   #1(未实现查看当前时间)
 > 5. 记录用户 #2(仅能记录)
 
-\* #1代表仅有linux含有的功能，#2代表仅有windows含有的功能
+*#1代表仅有linux含有的功能，#2代表仅有windows含有的功能*
 
-##更新情况
+## 更新情况
 2016-09-15 添加windows版<br>
 2016-09-17 添加linux版<br>
 2016-09-19 更新windows UI版
 
-##预计更新
+## 预计更新
 <strike>添加linux版</strike><br>
 <strike>添加倒计时功能(linux)</strike><br>
 <strike>添加windows版界面</strike><br>
 暂无
 
-##如何使用
+## 如何使用
 系统中需装有python3任意版本（下列下载链接，均来源于python.org）<br>
 [python3.5.1 32位](https://www.python.org/ftp/python/3.5.1/python-3.5.1.exe) <br>
 [python3.5.1 64位](https://www.python.org/ftp/python/3.5.1/python-3.5.1-amd64.exe)<br>
@@ -39,9 +39,9 @@ linux:
     webAuthenticate程序内检测连接wifi的部分，使用NetworkManager内置nmcli模块
     具体使用详见参数说明(webAuthenticate -h/--help)
 ```
-##许可证
+## 许可证
 MIT
 
-##作者邮箱
+## 作者邮箱
 **kasukuikawai@gmail.com**<br>
 1607768311@qq.com
