@@ -1,0 +1,16 @@
+[
+    {
+        "alias": "section name",
+        "username": "your usrname like phone number",
+        "provider": "NUIST or CMCC or ChinaNet or Unicom",
+        "encrypt": false,
+        "password": "your password"
+    },
+    {
+        "alias": "alrash",
+        "username": "ddddddddddd",
+        "provider": "CMCC",
+        "encrypt": false,
+        "password": "******"
+    }
+]

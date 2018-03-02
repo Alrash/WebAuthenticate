@@ -7,8 +7,18 @@
 import pywifi
 from pywifi import const
 
-import sys
 import json
+import base64
+
+import sys
+import os
+import time
+import errno
+
+import re
+import urllib
+import urllib.request
+import socket
 
 try:
     import argparse
@@ -25,12 +35,20 @@ if sys.version_info.major == 2:
 parse = argparse.ArgumentParser(description = '命令行控制认证网络')
 parse.add_argument('-I', '--login', action = 'store_true', dest = 'login', help='接入Internet')
 parse.add_argument('-s', '--section', action = 'store', dest = 'section', help='设置使用组组名')
-parse.add_argument('-t', '--time', action = 'store', dest = 'time', type = int, help='设置倒计时时间，单位s')
+parse.add_argument('-c', '--config', action = 'store', dest = 'config', help='配置文件')
 parse.add_argument('-S', '--status', action = 'store_true', dest = 'status', help='显示当前信息')
 parse.add_argument('-O', '--logout', action = 'store_true', dest = 'logout', help='断开Internet')
-parse.add_argument('-v', '--version', action = 'version', version='%(prog)s 1.0')
+parse.add_argument('-v', '--version', action = 'version', version='%(prog)s 1.1')
 
-# ------------------------- main -----------------------------------
+args = parse.parse_args()
+
+# check linux user
+if sys.platform == 'linux':
+    if os.geteuid() != 0:
+        sys.stderr.write("Pleasr run this script with root user, due to wpa_supplicant.\n");
+        sys.exit(1)
+
+# ------------------------- define function --------------------------------
 
 # some config parameters
 config_file = './webAuthenticate.json'
@@ -46,11 +64,10 @@ username = ''
 passwd = ''
 provider = ''
 enablemacauth = 0
-wifi = False
 
 # load config from file
 # return item or None
-def load_config(filename, alias):
+def get_alias_config_from_file(filename, alias):
     try:
         with open(filename, 'r') as f:
             data = json.load(f)
@@ -72,4 +89,175 @@ def load_config(filename, alias):
 def encode_password(password, encrypt = False):
     return password if encrypt == True else base64.b64encode(password.encode(encoding = 'utf-8')).decode()
 
+# set var username, passwd, provider
+def load_config(alias):
+    config = get_alias_config_from_file(config_file, alias)
+    if config == None:
+        sys.stderr.write('could not find alias {0} in {1}\n'.format(alias, config_file))
+        sys.exit(1)
 
+    global passwd, username, provider
+    username = config['username']
+    provider = config['provider']
+    passwd = encode_password(config['password'], config['encrypt'])
+
+def time_format(seconds):
+    seconds = seconds if seconds > 0 else 0
+    return '{:02d}'.format(seconds // 3600) + ":" + '{:02d}'.format(seconds // 60 % 60) + ":" + '{:02d}'.format(seconds % 60)
+
+# decode json
+def get_status_with_json(url, data = None):
+    request = urllib.request.Request(url)
+    try:
+        response = urllib.request.urlopen(request, data if data is None else data.encode(encoding = 'utf-8'), timeout = 3)
+    except urllib.error.URLError:
+        sys.stderr.write('maybe, your connected wifi is not i-NUIST\n')
+        sys.exit(-1)
+    except socket.timeout:
+        sys.stderr.write('response time out\n')
+        sys.exit(-1)
+    return json.loads(response.read().decode())
+
+# check connect ssid
+# return True or False
+def check_wifi_ssid():
+    wifi = pywifi.PyWiFi()
+    iface = wifi.interfaces()[0]
+    profiles = iface.network_profiles()
+    if len(iface.network_profiles()) == 0:
+        return False
+    else:
+        return iface.network_profiles()[0].ssid == 'i-NUIST'
+
+# active
+# retuen None   no-existed
+#        False  could not connect
+#        True   connected
+def active_connect():
+    wifi = pywifi.PyWiFi()
+
+    # load first wlan card
+    iface = wifi.interfaces()[0]
+    # scan wifi
+    iface.scan()
+    # get wifi ssid
+    bessis = iface.scan_results()
+
+    # check i-NUIST
+    exist = False
+    for net in bessis:
+        # Exist, set var exist = true, and then break loop
+        if net.ssid == 'i-NUIST':
+            exist = True
+            break
+
+    if exist == False:
+        return None
+
+    # disconnect
+    iface.disconnect()
+    time.sleep(1)
+    assert iface.status() in [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]
+
+    # set profile
+    profile = pywifi.Profile()
+    profile.ssid = 'i-NUIST'
+    profile.auth = const.AUTH_ALG_OPEN
+    profile.akm.append(const.AKM_TYPE_NONE)
+    
+    iface.remove_all_network_profiles()
+    nuist_profile = iface.add_network_profile(profile)
+
+    # connect
+    iface.connect(nuist_profile)
+    time.sleep(1)
+    return iface.status() == const.IFACE_CONNECTED
+
+def show_status_info(status):
+    print("*****************************************************")
+    for key in sorted(status.keys()):
+        if key != 'status' and key != 'data':
+            print('%-16s| %s'%(key, time_format(status[key]) if re.compile(r'.*timer').match(key) else status[key]))
+    print("*****************************************************")
+
+# login
+def login(alias):
+    status = get_status_with_json(urlInit)
+    if status['status'] != 0:
+        show_status_info(status)
+        return
+
+    # load config
+    load_config(alias)
+
+    # send login information
+    data = {'username': username, 'domain': provider, 'password': passwd, 'enablemacauth': enablemacauth}
+    status = get_status_with_json(urlLogin, urllib.parse.urlencode(data))
+    if status['status'] != 0:
+        print('login success')
+    else:
+        print("*****************************************************")
+        print("login fail, please check your username, password and service provider")
+        print("\tNote that uppercase and lowercase letters")
+        print("\tanother case: web page change its api")
+        print("username: " + username)
+        print("password: " + base64.b64decode(passwd).decode())
+        print("provider: " + provider)
+        print("*****************************************************")
+
+def show_info():
+    status = get_status_with_json(urlInit)
+    show_status_info(status)
+
+def logout():
+    status = get_status_with_json(urlInit)
+    if status['status'] != 0:
+        status = get_status_with_json(urlLogout)
+
+        if status['status'] != 0:
+            print('logout success')
+        else:
+            print('unknown error, perhaps this script becomes useless!')
+    else:
+        print('not connected i-NUIST wifi or have logouted')
+
+# ---------------------- main ---------------------------------
+if args.status:
+    if check_wifi_ssid() == False:
+        print("not connected wifi i-NUIST")
+    else:
+        show_info()
+    sys.exit(0)
+
+if args.logout:
+    if check_wifi_ssid() == False:
+        print("not connected wifi i-NUIST")
+    else:
+        logout()
+    sys.exit(0)
+
+# check connected wifi ssid
+if check_wifi_ssid() == False:
+    print('be ready to connect i-NUIST')
+    status = active_connect()
+    if status == True:
+        print('have connected')
+    elif status == False:
+        print('Failed connect!')
+        wifi = pywifi.PyWiFi()
+        iface = wifi.interfaces()[0]
+        iface.disconnect();
+        time.sleep(1);
+    else:
+        print('Could not found i-NUIST!')
+
+if args.login:
+    if args.config:
+        config_file = args.config
+
+    if args.section:
+        time.sleep(5)
+        login(args.section)
+    else:
+        sys.stderr.write("没有使用-s参数设置组名.\n")
+        sys.exit(1)
