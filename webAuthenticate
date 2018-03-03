@@ -36,6 +36,7 @@ parse = argparse.ArgumentParser(description = '命令行控制认证网络')
 parse.add_argument('-I', '--login', action = 'store_true', dest = 'login', help='接入Internet')
 parse.add_argument('-s', '--section', action = 'store', dest = 'section', help='设置使用组组名')
 parse.add_argument('-c', '--config', action = 'store', dest = 'config', help='配置文件')
+parse.add_argument('-w', '--wait-time', action = 'store', dest = 'wait', type = int, help='连接之前等待时间')
 parse.add_argument('-S', '--status', action = 'store_true', dest = 'status', help='显示当前信息')
 parse.add_argument('-O', '--logout', action = 'store_true', dest = 'logout', help='断开Internet')
 parse.add_argument('-v', '--version', action = 'version', version='%(prog)s 1.1')
@@ -52,7 +53,7 @@ if sys.platform == 'linux':
 
 # some config parameters
 config_file = './webAuthenticate.json'
-service_provider = ['NUIST', 'CMCC', 'ChinaNet', 'Unicom'];
+service_provider = ['NUIST', 'CMCC', 'ChinaNet', 'Unicom']
 
 # url
 url = 'http://a.nuist.edu.cn/index.php'
@@ -73,10 +74,10 @@ def get_alias_config_from_file(filename, alias):
             data = json.load(f)
     except OSError as e:
         if e.errno == errno.ENOENT:
-            sys.stderr.write('cannot find the file {0}.\n'.format(jsonFile));
+            sys.stderr.write('cannot find the file {0}.\n'.format(filename))
             sys.exit(-1)
         else:
-            sys.stderr.write('permission denied {0}.\n'.format(jsonFile));
+            sys.stderr.write('permission denied {0}.\n'.format(filename))
             sys.exit(-1)
 
     for item in data:
@@ -123,7 +124,6 @@ def get_status_with_json(url, data = None):
 def check_wifi_ssid():
     wifi = pywifi.PyWiFi()
     iface = wifi.interfaces()[0]
-    profiles = iface.network_profiles()
     if len(iface.network_profiles()) == 0:
         return False
     else:
@@ -134,44 +134,49 @@ def check_wifi_ssid():
 #        False  could not connect
 #        True   connected
 def active_connect():
-    wifi = pywifi.PyWiFi()
-
-    # load first wlan card
-    iface = wifi.interfaces()[0]
-    # scan wifi
-    iface.scan()
-    # get wifi ssid
-    bessis = iface.scan_results()
-
-    # check i-NUIST
-    exist = False
-    for net in bessis:
-        # Exist, set var exist = true, and then break loop
-        if net.ssid == 'i-NUIST':
-            exist = True
-            break
-
-    if exist == False:
-        return None
-
-    # disconnect
-    iface.disconnect()
-    time.sleep(1)
-    assert iface.status() in [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]
-
-    # set profile
-    profile = pywifi.Profile()
-    profile.ssid = 'i-NUIST'
-    profile.auth = const.AUTH_ALG_OPEN
-    profile.akm.append(const.AKM_TYPE_NONE)
+    if sys.platform == 'win32':
+        return True
+    else:
+        wifi = pywifi.PyWiFi()
     
-    iface.remove_all_network_profiles()
-    nuist_profile = iface.add_network_profile(profile)
-
-    # connect
-    iface.connect(nuist_profile)
-    time.sleep(1)
-    return iface.status() == const.IFACE_CONNECTED
+        # load first wlan card
+        iface = wifi.interfaces()[0]
+        # scan wifi
+        iface.scan()
+        # get wifi ssid
+        bessis = iface.scan_results()
+    
+        # check i-NUIST
+        exist = False
+        for net in bessis:
+            # Exist, set var exist = true, and then break loop
+            if net.ssid == 'i-NUIST':
+                exist = True
+                break
+    
+        if exist == False:
+            return None
+    
+        # disconnect
+        iface.disconnect()
+        time.sleep(1)
+        print(iface.status())
+        assert iface.status() in [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]
+    
+        # set profile
+        profile = pywifi.Profile()
+        profile.ssid = 'i-NUIST'
+        profile.auth = const.AUTH_ALG_OPEN
+        profile.akm.append(const.AKM_TYPE_NONE)
+        
+        iface.remove_all_network_profiles()
+        nuist_profile = iface.add_network_profile(profile)
+    
+        # connect
+        iface.connect(nuist_profile)
+        time.sleep(1)
+        print(iface.status())
+        return iface.status() == const.IFACE_CONNECTED
 
 def show_status_info(status):
     print("*****************************************************")
@@ -246,17 +251,21 @@ if check_wifi_ssid() == False:
         print('Failed connect!')
         wifi = pywifi.PyWiFi()
         iface = wifi.interfaces()[0]
-        iface.disconnect();
-        time.sleep(1);
+        iface.disconnect()
+        time.sleep(1)
+        sys.exit(1)
     else:
         print('Could not found i-NUIST!')
+        sys.exit(1)
 
 if args.login:
     if args.config:
         config_file = args.config
 
+    if args.wait and args.wait > 0:
+        time.sleep(args.wait)
+
     if args.section:
-        time.sleep(5)
         login(args.section)
     else:
         sys.stderr.write("没有使用-s参数设置组名.\n")
