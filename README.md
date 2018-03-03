@@ -1,44 +1,55 @@
 # 脚本版认证
 
 ## 用途
-用于南京信息工程大学校园网web认证：
-> 1. 入网 
-> 2. 查看本次登录时间
-> 3. 退出登录
-> 4. 倒计时   #1(未实现查看当前时间)
-> 5. 记录用户 #2(仅能记录)
+> 1. 用于南京信息工程大学校园网web认证：
+> 2. 可用于windows与linux平台
+> 3. 可通过部分设置，达到开机启动的效果
 
-*#1代表仅有linux含有的功能，#2代表仅有windows含有的功能*
+## 依赖
+> 1. python3
+> 2. pywifi模块
 
-## 更新情况
-2016-09-15 添加windows版<br>
-2016-09-17 添加linux版<br>
-2016-09-19 更新windows UI版
-
-## 预计更新
-<strike>添加linux版</strike><br>
-<strike>添加倒计时功能(linux)</strike><br>
-<strike>添加windows版界面</strike><br>
-暂无
+## 部分bug
+> 1. windows无法强制切换wifi
 
 ## 如何使用
-系统中需装有python3任意版本（下列下载链接，均来源于python.org）<br>
-[python3.5.1 32位](https://www.python.org/ftp/python/3.5.1/python-3.5.1.exe) <br>
-[python3.5.1 64位](https://www.python.org/ftp/python/3.5.1/python-3.5.1-amd64.exe)<br>
+> 1. 使用-h参数查看参数使用
+> 2. 常用参数
+>  * -I 表示连接
+>  * -c filename 表示使用filename配置文件，**不加此参数，默认为当前目录下的webAuthenticate.json**
+>  * -s alias 表示使用配置文件中的哪一组配置
+>  * -O 表示退出登陆
 
-```
-windows:
-    双击window.pyw即可，弹出UI
+## 配置文件
+配置文件使用json格式编写 
+```json
+[
+    {
+        "alias":"-s 参数指定的名称",
+        "username": "登陆时的用户名",
+        "provider": "供应商，具体请看自带的配置文件",
+        "encrypt": "true or false",
+        "password": "密码；与encrypt对应，true时，请填写base64编码之后的文本；false时，直接使用明文"
+    }
+]
 ```
 
+## 登陆样例
+```python
+python webAuthenticate -I -s alrash -c "D:\code\WebAuthenticate\webAuthenticate.json"
 ```
-linux:
-    仅提供命令行
-    相对于windows使用ini配置文件格式，这里使用json格式作为配置文件，每项意义均和windows版相同
-    webAuthenticate.json文件按照webAuthenticate内所写(path变量)，应放置于/etc/webAuthenticate文件夹下，webAuthenticate程序随意放置
-    webAuthenticate程序内检测连接wifi的部分，使用NetworkManager内置nmcli模块
-    具体使用详见参数说明(webAuthenticate -h/--help)
-```
+
+## windows登陆设置
+**右击“此电脑”/“我的计算机”等，选择“管理”**  
+![01](./pic/01.png)
+![02](./pic/02.png)
+![03](./pic/03.png)
+![04](./pic/04.png)
+![05](./pic/05.png)
+![06](./pic/06.png)
+![07](./pic/07.png)
+![08](./pic/08.png)
+
 ## 许可证
 MIT
 
