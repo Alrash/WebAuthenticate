@@ -160,7 +160,6 @@ def active_connect():
         # disconnect
         iface.disconnect()
         time.sleep(1)
-        print(iface.status())
         assert iface.status() in [const.IFACE_DISCONNECTED, const.IFACE_INACTIVE]
     
         # set profile
@@ -175,7 +174,6 @@ def active_connect():
         # connect
         iface.connect(nuist_profile)
         time.sleep(1)
-        print(iface.status())
         return iface.status() == const.IFACE_CONNECTED
 
 def show_status_info(status):
