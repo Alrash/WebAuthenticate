@@ -7,10 +7,13 @@
 
 ## 依赖
 > 1. python3
-> 2. pywifi模块
+> 2. [pywifi模块 2017-11-05版本](https://github.com/awkman/pywifi)
 
 ## 部分bug
-> 1. windows无法强制切换wifi
+> 1. <strike>windows无法强制切换wifi</strike>
+
+## \_wifiutil\_win.py使用
+将\_wifiutil\_win.py复制到python目录下"Lib\site-packages\pywifi\"内
 
 ## 如何使用
 > 1. 使用-h参数查看参数使用
