@@ -7,13 +7,11 @@
 
 ## 依赖
 > 1. python3
-> 2. [pywifi模块 2017-11-05版本](https://github.com/awkman/pywifi)
+> 2. [pywifi模块 2017-11-05版本](https://github.com/awkman/pywifi) *有线可不用* 
 
 ## 部分bug
 > 1. <strike>windows无法强制切换wifi</strike>
-
-## \_wifiutil\_win.py使用
-将\_wifiutil\_win.py复制到python目录下"Lib\site-packages\pywifi\"内
+> 2. <strike>每次自动连接时，都会先断开wifi</strike>
 
 ## 如何使用
 > 1. 使用-h参数查看参数使用
@@ -22,6 +20,9 @@
 >  * -c filename 表示使用filename配置文件，**不加此参数，默认为当前目录下的webAuthenticate.json**
 >  * -s alias 表示使用配置文件中的哪一组配置
 >  * -O 表示退出登陆
+>  * -a 使用表示自动连接校园网络 **无线可选，有线无需选择**
+>  * -w wait_time 表示自动连接网络之后等待的时间，防止wifi扫描不完整，默认0
+>  * -W 0|1 表示使用什么方式自动连接网络，0表示WPA，1表示NetworkManager*默认*；**-a 参数未使用时，此参数无用**
 
 ## 配置文件
 配置文件使用json格式编写 
@@ -37,9 +38,20 @@
 ]
 ```
 
-## 登陆样例
+## 已连接i_NUIST，登陆样例
 ```python
 python webAuthenticate -I -s alrash -c "D:\code\WebAuthenticate\webAuthenticate.json"
+```
+
+## 自动连接i_NUIST，登陆样例
+### 使用WPA连接i_NUIST
+```python
+python webAuthenticate -I -s alrash -c "D:\code\WebAuthenticate\webAuthenticate.json" -a -W 0 -w 1
+```
+
+### 使用NetworkManager连接i_NUIST（注意，未完成）
+```python
+python webAuthenticate -I -s alrash -c "D:\code\WebAuthenticate\webAuthenticate.json" -a -w 1
 ```
 
 ## windows登陆设置
