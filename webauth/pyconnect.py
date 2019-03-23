@@ -91,7 +91,7 @@ def active_connect(ssid, check_wifi_ssid):
 
     # 获取配置
     profile = _get_network_profile(ssid)
-    if profile == None:
+    if profile is None:
         profile = _create_network_profile(ssid)
         profile = iface.add_network_profile(profile)
 
